@@ -9,15 +9,13 @@ import android.support.v7.app.AppCompatActivity;
 import io.pumpkinz.pumpkinreader.etc.Constants;
 
 
-public class PumpkinReaderActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public abstract class PumpkinReaderActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        final SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
         pref.registerOnSharedPreferenceChangeListener(this);
-
         changeTheme(pref);
-
         super.onCreate(savedInstanceState);
     }
 
@@ -30,6 +28,7 @@ public class PumpkinReaderActivity extends AppCompatActivity implements SharedPr
     }
 
     protected void changeTheme(SharedPreferences preferences) {
+
         boolean isDarkTheme = preferences.getBoolean(Constants.CONFIG_DARK_THEME, false);
 
         if (isDarkTheme) {
