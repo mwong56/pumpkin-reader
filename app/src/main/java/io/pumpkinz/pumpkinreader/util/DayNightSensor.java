@@ -29,9 +29,9 @@ public class DayNightSensor implements SensorEventListener {
   private static final String TAG = DayNightSensor.class.getName();
 
   // Threshold before lighting is considered "dark"
-  public static final float LUX_THRESHOLD = 30.0f;
+  public static final float LUX_THRESHOLD = 25.0f;
   // Interval between light samples taken in milliseconds
-  public static final int DEFAULT_INTERVAL = 1000;
+  public static final int DEFAULT_INTERVAL = 4000;
 
 
   // Easier for users to customise the library
