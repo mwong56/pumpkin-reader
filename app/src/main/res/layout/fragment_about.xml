@@ -43,7 +43,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:autoLink="web"
+                        android:textIsSelectable="true"
                         android:text="@string/pumpkinz_about" />
 
                 </LinearLayout>
@@ -100,7 +100,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:autoLink="web"
+                    android:textIsSelectable="true"
                     android:text="@string/pumpkinz_credits" />
 
             </LinearLayout>

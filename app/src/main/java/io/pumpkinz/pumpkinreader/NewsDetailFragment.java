@@ -10,6 +10,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -30,6 +31,7 @@ import io.pumpkinz.pumpkinreader.model.Comment;
 import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.service.DataSource;
 import io.pumpkinz.pumpkinreader.util.CommentParcel;
+import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
@@ -87,7 +89,9 @@ public class NewsDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_news_detail, container, false);
+        final View view = inflater.inflate(R.layout.fragment_news_detail, container, false);
+        BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, ((ViewGroup) view));
+        return view;
     }
 
     @Override

@@ -51,6 +51,8 @@ dependencies {
     implementation 'org.parceler:parceler-api:1.1.12'
     annotationProcessor 'org.parceler:parceler:1.1.12'
 
+    implementation 'me.saket:better-link-movement-method:2.2.0'
+
     // Lifecycle
     annotationProcessor  "android.arch.lifecycle:compiler:1.1.1"
     implementation "android.arch.lifecycle:extensions:$project.archLifecycleVersion"

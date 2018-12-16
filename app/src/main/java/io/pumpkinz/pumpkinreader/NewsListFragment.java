@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,6 +30,7 @@ import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.service.DataSource;
 import io.pumpkinz.pumpkinreader.util.ActionUtil;
 import io.pumpkinz.pumpkinreader.util.PreferencesUtil;
+import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
@@ -98,6 +100,7 @@ public class NewsListFragment extends Fragment {
             }
         });
 
+        BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, ((ViewGroup) view));
         return view;
     }
 

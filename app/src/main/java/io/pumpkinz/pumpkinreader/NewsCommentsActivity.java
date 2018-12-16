@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.text.util.Linkify;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -14,6 +15,7 @@ import io.pumpkinz.pumpkinreader.etc.Constants;
 import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.util.ActionUtil;
 import io.pumpkinz.pumpkinreader.util.PreferencesUtil;
+import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 
 
 public class NewsCommentsActivity extends PumpkinReaderActivity
@@ -37,6 +39,8 @@ public class NewsCommentsActivity extends PumpkinReaderActivity
         } else {
             news = Parcels.unwrap(getIntent().getParcelableExtra(Constants.NEWS));
         }
+
+        BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, this);
     }
 
     @Override

@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +24,7 @@ import io.pumpkinz.pumpkinreader.R;
 import io.pumpkinz.pumpkinreader.model.Comment;
 import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.util.Util;
+import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 
 
 public class NewsDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -91,9 +93,11 @@ public class NewsDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         switch (viewType) {
             case 0:
                 v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.news_detail, viewGroup, false);
+                BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, ((ViewGroup) v));
                 return new NewsViewHolder(v);
             case 1:
                 v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.comment_item, viewGroup, false);
+                BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, ((ViewGroup) v));
                 return new CommentViewHolder(v);
             case 2:
                 v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.loading_item, viewGroup, false);
@@ -146,7 +150,6 @@ public class NewsDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 commentViewHolder.getSubmitter().setText(comment.getBy());
                 commentViewHolder.getDate().setText(this.dateFormatter.timeAgo(comment.getTime()));
                 commentViewHolder.getBody().setText(Util.trim(Html.fromHtml(comment.getText())));
-                commentViewHolder.getBody().setMovementMethod(LinkMovementMethod.getInstance());
 
                 if (comment.getCommentIds().size() > 0 && !comment.isExpanded()) {
                     commentViewHolder.getChildCount().setText("+" + comment.getAllChildCount() + " comments");
