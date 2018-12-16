@@ -28,7 +28,6 @@ public abstract class PumpkinReaderActivity extends AppCompatActivity implements
     }
 
     protected void changeTheme(SharedPreferences preferences) {
-
         boolean isDarkTheme = preferences.getBoolean(Constants.CONFIG_DARK_THEME, false);
 
         if (isDarkTheme) {
