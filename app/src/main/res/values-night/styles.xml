@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="PumpkinTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="title_color">@color/grey_1000w</item>
+        <item name="dim_title_color">@color/grey_500</item>
+        <item name="list_bg_color">@color/background_dark</item>
+        <item name="card_style">@style/CardView.Dark</item>
+        <item name="colorControlHighlight">@color/grey_600</item>
+    </style>
+
+</resources>

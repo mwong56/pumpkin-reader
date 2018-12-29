@@ -5,37 +5,34 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import io.pumpkinz.pumpkinreader.etc.Constants;
+import io.pumpkinz.pumpkinreader.util.NightModeUtil;
+
+import static android.support.v7.app.AppCompatDelegate.*;
+import static io.pumpkinz.pumpkinreader.util.Util.isDayTime;
 
 
-public abstract class PumpkinReaderActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public abstract class PumpkinReaderActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         final SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        pref.registerOnSharedPreferenceChangeListener(this);
-        changeTheme(pref);
+        NightModeUtil.changeTheme(pref);
         super.onCreate(savedInstanceState);
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        if (s.equals(Constants.CONFIG_DARK_THEME)) {
-            changeTheme(PreferenceManager.getDefaultSharedPreferences(this));
-            recreate();
-        }
+    protected void onResume() {
+        super.onResume();
     }
 
-    protected void changeTheme(SharedPreferences preferences) {
-        boolean isDarkTheme = preferences.getBoolean(Constants.CONFIG_DARK_THEME, false);
-
-        if (isDarkTheme) {
-            setTheme(R.style.DarkPumpkinTheme);
-        } else {
-            setTheme(R.style.PumpkinTheme);
-        }
-    }
 
     protected void setScrollFlag(AppBarLayout.LayoutParams layoutParams) {
         final SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);

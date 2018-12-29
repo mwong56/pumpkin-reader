@@ -6,6 +6,7 @@ import android.util.Log;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -80,6 +81,17 @@ public class Util {
 
     public static int pxToDp(int px) {
         return (int) (px / Resources.getSystem().getDisplayMetrics().density);
+    }
+
+    public static boolean isDayTime(final Calendar current) {
+        final Calendar start = Calendar.getInstance();
+        start.set(Calendar.HOUR_OF_DAY, 7);
+        start.set(Calendar.MINUTE, 0);
+        final Calendar end = Calendar.getInstance();
+        end.set(Calendar.HOUR_OF_DAY, 19);
+        end.set(Calendar.MINUTE, 0);
+
+        return (current.after(start) && current.before(end));
     }
 
 }

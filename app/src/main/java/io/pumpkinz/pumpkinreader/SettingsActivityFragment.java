@@ -5,8 +5,10 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 
 import io.pumpkinz.pumpkinreader.etc.Constants;
+import io.pumpkinz.pumpkinreader.util.NightModeUtil;
 
 
 public class SettingsActivityFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -22,22 +24,29 @@ public class SettingsActivityFragment extends PreferenceFragment implements Shar
 
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
-        configureDarkModePref();
+        configureDarkThemeButton(sharedPreferences);
     }
 
-    private void configureDarkModePref() {
-        boolean enabled = sharedPreferences.getBoolean(Constants.CONFIG_AUTO_DARK_THEME, false);
-        Preference pref = getPreferenceManager().findPreference(Constants.CONFIG_DARK_THEME);
+    public void configureDarkThemeButton(final SharedPreferences sharedPreferences) {
+        boolean autoEnabled = sharedPreferences.getBoolean(Constants.CONFIG_AUTO_DARK_THEME, false);
+        final Preference configDarkPreference = getPreferenceManager().findPreference(Constants.CONFIG_DARK_THEME);
 
-        if (pref != null) {
-            pref.setEnabled(!enabled);
+        if (configDarkPreference != null) {
+            configDarkPreference.setEnabled(!autoEnabled);
         }
     }
+
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(Constants.CONFIG_AUTO_DARK_THEME)) {
-            configureDarkModePref();
+            configureDarkThemeButton(sharedPreferences);
+        }
+
+        NightModeUtil.changeTheme(sharedPreferences);
+        final AppCompatActivity activity = (AppCompatActivity) getActivity();
+        if (activity != null) {
+            activity.getDelegate().applyDayNight();
         }
     }
 }

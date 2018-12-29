@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="PumpkinTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="PumpkinTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="colorPrimary">@color/pumpkin_primary</item>
         <item name="colorPrimaryDark">@color/pumpkin_primaryDark</item>
         <item name="colorAccent">@color/pumpkin_accent</item>
@@ -9,14 +9,6 @@
         <item name="dim_title_color">@color/grey_500</item>
         <item name="list_bg_color">@color/grey_1000w</item>
         <item name="card_style">@style/CardView</item>
-    </style>
-
-    <style name="DarkPumpkinTheme" parent="Theme.AppCompat.NoActionBar">
-        <item name="title_color">@color/grey_1000w</item>
-        <item name="dim_title_color">@color/grey_500</item>
-        <item name="list_bg_color">@color/background_dark</item>
-        <item name="card_style">@style/CardView.Dark</item>
-        <item name="colorControlHighlight">@color/grey_600</item>
     </style>
 
     <style name="Divider">
