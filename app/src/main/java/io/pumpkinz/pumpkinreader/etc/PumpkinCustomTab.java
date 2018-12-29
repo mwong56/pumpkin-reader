@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -37,14 +38,12 @@ public class PumpkinCustomTab {
     private CustomTabsIntent buildCustomTabsIntent() {
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         builder.setShowTitle(true);
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(activity);
 
-        int color;
+        int color = ContextCompat.getColor(activity, R.color.pumpkin_primary);
 
-        if (pref.getBoolean(Constants.CONFIG_DARK_THEME, false)) {
+        int currentNightMode = activity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        if (currentNightMode == Configuration.UI_MODE_NIGHT_YES) {
             color = ContextCompat.getColor(activity, R.color.primary_material_dark);
-        } else {
-            color = ContextCompat.getColor(activity, R.color.pumpkin_primary);
         }
 
         builder.setToolbarColor(color);
