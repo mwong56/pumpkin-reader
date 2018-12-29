@@ -153,7 +153,7 @@ public class NewsListFragment extends Fragment {
         boolean isURLValid = news.getUrl() != null && !news.getUrl().isEmpty();
 
         if (shouldOpenLink && isURLValid) {
-            ActionUtil.open(getActivity(), news);
+            ActionUtil.open(getActivity(), news, false);
         }
     }
 

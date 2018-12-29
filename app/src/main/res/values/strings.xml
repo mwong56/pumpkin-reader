@@ -12,6 +12,7 @@
     <string name="comments">Comments</string>
     <string name="link">Link</string>
     <string name="open_link">Open Link</string>
+    <string name="open_outline">Open Outline</string>
     <string name="save">Save</string>
     <string name="unsave">Unsave</string>
     <string name="undo">Undo</string>

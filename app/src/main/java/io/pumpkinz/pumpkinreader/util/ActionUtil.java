@@ -26,10 +26,15 @@ import io.pumpkinz.pumpkinreader.model.News;
 
 
 public class ActionUtil {
+    static String OUTLINE_URL = "https://outline.com/";
 
-    public static void open(Context ctx, News news) {
+    public static void open(Context ctx, News news, boolean useOutline) {
         if (news.getUrl() != null && !news.getUrl().isEmpty()) {
             Uri uri = Uri.parse(news.getUrl());
+
+            if (useOutline) {
+                uri = Uri.parse(String.format("%s%s%s", OUTLINE_URL, uri.getHost(), uri.getPath()));
+            }
 
             List<String> pkgs = getChromePackages(ctx);
 

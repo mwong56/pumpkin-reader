@@ -23,4 +23,11 @@
         android:icon="@drawable/ic_share_white_24dp"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_outline"
+        android:orderInCategory="400"
+        android:title="@string/open_outline"
+        android:icon="@drawable/ic_chrome_reader_mode"
+        app:showAsAction="ifRoom" />
+
 </menu>
