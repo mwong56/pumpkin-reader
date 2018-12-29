@@ -78,8 +78,8 @@ public class ActionUtil {
         toggleSaveAction(ctx, menu, news);
     }
 
-    public static void share(Context ctx, News news) {
-        ctx.startActivity(Intent.createChooser(getPumpkinShareIntent(news), ctx.getResources().getString(R.string.share)));
+    public static void share(Context ctx, News news, boolean shareComments) {
+        ctx.startActivity(Intent.createChooser(getPumpkinShareIntent(news, shareComments), ctx.getResources().getString(R.string.share)));
     }
 
     public static void toggleSaveAction(Context ctx, Menu menu, News news) {
@@ -94,13 +94,13 @@ public class ActionUtil {
         }
     }
 
-    public static Intent getPumpkinShareIntent(News news) {
+    public static Intent getPumpkinShareIntent(News news, boolean shareComments) {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.putExtra(Intent.EXTRA_SUBJECT, news.getTitle());
 
         String text;
 
-        if (news.getUrl() != null && !news.getUrl().isEmpty()) {
+        if (news.getUrl() != null && !news.getUrl().isEmpty() && !shareComments) {
             text = news.getUrl();
         } else {
             text = Constants.HN_BASE_URL + news.getId();

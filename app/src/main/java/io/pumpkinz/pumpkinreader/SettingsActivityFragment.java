@@ -36,7 +36,6 @@ public class SettingsActivityFragment extends PreferenceFragment implements Shar
         }
     }
 
-
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(Constants.CONFIG_AUTO_DARK_THEME)) {

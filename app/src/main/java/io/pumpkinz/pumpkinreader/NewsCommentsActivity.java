@@ -67,7 +67,7 @@ public class NewsCommentsActivity extends PumpkinReaderActivity
                 ActionUtil.save(this, menu, news);
                 return true;
             case R.id.action_share:
-                ActionUtil.share(this, news);
+                ActionUtil.share(this, news, true);
                 return true;
         }
 
