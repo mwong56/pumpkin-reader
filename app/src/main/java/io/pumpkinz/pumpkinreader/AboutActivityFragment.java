@@ -6,9 +6,14 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
 
 import io.pumpkinz.pumpkinreader.etc.Constants;
 import me.saket.bettermovementmethod.BetterLinkMovementMethod;
@@ -47,6 +52,23 @@ public class AboutActivityFragment extends Fragment {
                 rateApp();
             }
         });
+        this.setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_about, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_open_licenses:
+                startActivity(new Intent(getContext(), OssLicensesMenuActivity.class));
+                return true;
+            default:
+                return false;
+        }
     }
 
     private void shareApp() {
