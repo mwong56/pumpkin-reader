@@ -50,7 +50,7 @@ public class NewsDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     view = (View) view.getParent().getParent();
                 }
 
-                RecyclerView recyclerView = (RecyclerView) fragment.getView().findViewById(R.id.news_detail);
+                RecyclerView recyclerView = fragment.getView().findViewById(R.id.news_detail);
 
                 if (recyclerView == null) {
                     return;

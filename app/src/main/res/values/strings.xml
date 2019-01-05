@@ -79,4 +79,6 @@
     <string name="title_activity_news_comments">News</string>
     <!--End Time Ago Strings-->
 
+    <string name="rationale_location">This app requests access to location to obtain sunrise/sunset values. Denying will use default values.</string>
+
 </resources>
