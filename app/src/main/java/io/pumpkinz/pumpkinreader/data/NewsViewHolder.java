@@ -2,7 +2,7 @@ package io.pumpkinz.pumpkinreader.data;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;

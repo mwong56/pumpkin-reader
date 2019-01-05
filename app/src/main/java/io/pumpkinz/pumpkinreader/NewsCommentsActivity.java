@@ -2,9 +2,9 @@ package io.pumpkinz.pumpkinreader;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.appbar.AppBarLayout;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
 import android.text.util.Linkify;
 import android.view.Menu;
 import android.view.MenuItem;

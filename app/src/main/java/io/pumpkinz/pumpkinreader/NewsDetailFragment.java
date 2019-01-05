@@ -5,11 +5,11 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Gravity;
@@ -18,7 +18,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+
+import com.trello.rxlifecycle3.components.support.RxFragment;
+
 import org.parceler.Parcels;
+import org.reactivestreams.Subscriber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,23 +35,19 @@ import io.pumpkinz.pumpkinreader.model.Comment;
 import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.service.DataSource;
 import io.pumpkinz.pumpkinreader.util.CommentParcel;
+import io.reactivex.Single;
 import me.saket.bettermovementmethod.BetterLinkMovementMethod;
-import rx.Observable;
-import rx.Subscriber;
-import rx.Subscription;
-import rx.android.app.AppObservable;
-import rx.functions.Func1;
-import rx.subscriptions.Subscriptions;
 
 
-public class NewsDetailFragment extends Fragment {
+
+public class NewsDetailFragment extends RxFragment {
 
     private static final String SAVED_DATASET = "io.pumpkinz.pumpkinreader.model.saved_dataset";
     private static final String SAVED_COMMENTS = "io.pumpkinz.pumpkinreader.model.saved_comments";
 
     private News news;
-    private Observable<List<Comment>> comments;
-    private Subscription subscription = Subscriptions.empty();
+    private Single<List<Comment>> comments;
+//    private Subscription subscription = Subscriptions.empty();
     private DataSource dataSource;
     private NewsListener newsListener;
     private NewsDetailAdapter newsDetailAdapter;
@@ -106,7 +106,7 @@ public class NewsDetailFragment extends Fragment {
         newsDetail.getItemAnimator().setAddDuration(200);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        layoutManager.setOrientation(RecyclerView.VERTICAL);
         newsDetail.setLayoutManager(layoutManager);
 
         newsDetailAdapter = new NewsDetailAdapter(this, news);
@@ -130,7 +130,7 @@ public class NewsDetailFragment extends Fragment {
         }
 
         if (news != null && newsDetailAdapter.getDataSet().isEmpty()) {
-            subscription = comments.subscribe(new CommentsSubscriber(false, true));
+            subscription = comments.subscribe(new CommentsSubscriber(false, true))
         } else if (news != null && newsDetailAdapter.hasLoadingMore()) {
             subscription = comments.subscribe(new CommentsSubscriber(false, false));
         }

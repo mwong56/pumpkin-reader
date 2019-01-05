@@ -3,23 +3,15 @@ package io.pumpkinz.pumpkinreader;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.AppBarLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AppCompatDelegate;
+import com.google.android.material.appbar.AppBarLayout;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import com.trello.rxlifecycle3.components.support.RxAppCompatActivity;
 
 import io.pumpkinz.pumpkinreader.etc.Constants;
 import io.pumpkinz.pumpkinreader.util.NightModeUtil;
 
-import static android.support.v7.app.AppCompatDelegate.*;
-import static io.pumpkinz.pumpkinreader.util.Util.isDayTime;
 
-
-public abstract class PumpkinReaderActivity extends AppCompatActivity {
+public abstract class PumpkinReaderActivity extends RxAppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

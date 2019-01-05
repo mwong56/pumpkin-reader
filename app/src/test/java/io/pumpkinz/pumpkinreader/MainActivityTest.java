@@ -1,6 +1,6 @@
 package io.pumpkinz.pumpkinreader;
 
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 
 import org.junit.Before;
 import org.junit.Test;

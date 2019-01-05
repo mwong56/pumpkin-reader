@@ -5,10 +5,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Gravity;
@@ -16,6 +15,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import com.trello.rxlifecycle3.components.support.RxFragment;
 
 import org.parceler.Parcels;
 
@@ -30,15 +31,12 @@ import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.service.DataSource;
 import io.pumpkinz.pumpkinreader.util.ActionUtil;
 import io.pumpkinz.pumpkinreader.util.PreferencesUtil;
+import io.reactivex.Single;
 import me.saket.bettermovementmethod.BetterLinkMovementMethod;
-import rx.Observable;
-import rx.Subscriber;
-import rx.Subscription;
-import rx.android.app.AppObservable;
-import rx.subscriptions.Subscriptions;
 
 
-public class NewsListFragment extends Fragment {
+
+public class NewsListFragment extends RxFragment {
 
     private static final int N_NEWS_PER_LOAD = 30;
     private static final int LOADING_THRESHOLD = 15;
@@ -47,8 +45,7 @@ public class NewsListFragment extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
     private NewsAdapter newsAdapter;
     private DataSource dataSource;
-    private Observable<List<News>> stories;
-    private Subscription subscription = Subscriptions.empty();
+    private Single<List<News>> stories;
     private boolean isLoading = false;
     private int newsType = R.string.top;
 
@@ -69,7 +66,7 @@ public class NewsListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         setRetainInstance(true);
-        stories = AppObservable.bindFragment(this, loadNewsData(0, N_NEWS_PER_LOAD, true));
+        stories = loadNewsData(0, N_NEWS_PER_LOAD, true);
     }
 
     @Override
@@ -170,8 +167,8 @@ public class NewsListFragment extends Fragment {
         subscription = stories.subscribe(new StoriesSubscriber(refresh));
     }
 
-    private Observable<List<News>> loadNewsData(int from, int count, boolean refresh) {
-        Observable<List<News>> ret;
+    private Single<List<News>> loadNewsData(int from, int count, boolean refresh) {
+        Single<List<News>> ret;
 
         switch (this.newsType) {
             case R.string.saved:

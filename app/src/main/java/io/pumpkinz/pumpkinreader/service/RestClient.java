@@ -6,29 +6,19 @@ import com.google.gson.GsonBuilder;
 import java.util.List;
 
 import io.pumpkinz.pumpkinreader.model.Comment;
-import io.pumpkinz.pumpkinreader.model.Item;
 import io.pumpkinz.pumpkinreader.model.News;
+import io.reactivex.Single;
 import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
-import rx.Observable;
 
 
-public class RestClient implements ApiService {
+public class RestClient {
 
     private static final String HN_API_ENDPOINT = "https://hacker-news.firebaseio.com/v0";
-    private static RestClient instance;
     private static RestAdapter restAdapter;
     private static ApiService apiService;
 
     private RestClient() {
-    }
-
-    public static RestClient service() {
-        if (instance == null) {
-            instance = new RestClient();
-        }
-
-        return instance;
     }
 
     private static RestAdapter getAdapter() {
@@ -46,46 +36,11 @@ public class RestClient implements ApiService {
         return restAdapter;
     }
 
-    private static ApiService getService() {
+    public static ApiService getService() {
         if (apiService == null) {
             apiService = getAdapter().create(ApiService.class);
         }
         return apiService;
-    }
-
-    @Override
-    public Observable<List<Integer>> getHNNewIds() {
-        return getService().getHNNewIds();
-    }
-
-    @Override
-    public Observable<List<Integer>> getHNTopIds() {
-        return getService().getHNTopIds();
-    }
-
-    @Override
-    public Observable<List<Integer>> getHNAskIds() {
-        return getService().getHNAskIds();
-    }
-
-    @Override
-    public Observable<List<Integer>> getHNShowIds() {
-        return getService().getHNShowIds();
-    }
-
-    @Override
-    public Observable<List<Integer>> getHNJobIds() {
-        return getService().getHNJobIds();
-    }
-
-    @Override
-    public Observable<News> getNews(int newsId) {
-        return getService().getNews(newsId);
-    }
-
-    @Override
-    public Observable<Comment> getComment(int commentId) {
-        return getService().getComment(commentId);
     }
 
 }

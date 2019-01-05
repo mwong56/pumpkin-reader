@@ -5,15 +5,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.NavigationView;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.navigation.NavigationView;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import android.view.MenuItem;
 import android.view.WindowManager;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
 
 
 public class MainActivity extends PumpkinReaderActivity {
@@ -125,6 +126,7 @@ public class MainActivity extends PumpkinReaderActivity {
                 getSupportActionBar().setTitle(menuItem.getTitle());
                 fragment.setNewsType(R.string.ask_hn);
                 fragment.forceRefresh();
+
                 break;
             case R.id.sidenav_menu_show:
                 getSupportActionBar().setTitle(menuItem.getTitle());

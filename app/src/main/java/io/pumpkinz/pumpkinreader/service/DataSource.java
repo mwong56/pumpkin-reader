@@ -14,9 +14,12 @@ import io.pumpkinz.pumpkinreader.exception.EndOfListException;
 import io.pumpkinz.pumpkinreader.model.Comment;
 import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.util.Util;
-import rx.Observable;
-import rx.functions.Action1;
-import rx.functions.Func1;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.SingleSource;
+import io.reactivex.SingleTransformer;
+import io.reactivex.functions.Consumer;
 
 
 public class DataSource {
@@ -27,158 +30,132 @@ public class DataSource {
         this.ctx = ctx;
     }
 
-    public Observable<List<News>> getHNSaved(final int from, final int count) {
+    public Single<List<News>> getHNSaved(final int from, final int count) {
         return getHNSavedIds()
                 .compose(new NewsTransformer(from, count));
     }
 
-    public Observable<List<News>> getHNNew(final int from, final int count, boolean isRefresh) {
+    public Single<List<News>> getHNNew(final int from, final int count, boolean isRefresh) {
         return getHNNewIds(isRefresh)
                 .compose(new NewsTransformer(from, count));
     }
 
-    public Observable<List<News>> getHNTop(final int from, final int count, boolean isRefresh) {
+    public Single<List<News>> getHNTop(final int from, final int count, boolean isRefresh) {
         return getHNTopIds(isRefresh)
                 .compose(new NewsTransformer(from, count));
     }
 
-    public Observable<List<News>> getHNAsk(final int from, final int count, boolean isRefresh) {
+    public Single<List<News>> getHNAsk(final int from, final int count, boolean isRefresh) {
         return getHNAskIds(isRefresh)
                 .compose(new NewsTransformer(from, count));
     }
 
-    public Observable<List<News>> getHNShow(final int from, final int count, boolean isRefresh) {
+    public Single<List<News>> getHNShow(final int from, final int count, boolean isRefresh) {
         return getHNShowIds(isRefresh)
                 .compose(new NewsTransformer(from, count));
     }
 
-    public Observable<List<News>> getHNJob(final int from, final int count, boolean isRefresh) {
+    public Single<List<News>> getHNJob(final int from, final int count, boolean isRefresh) {
         return getHNJobIds(isRefresh)
                 .compose(new NewsTransformer(from, count));
     }
 
-    public Observable<News> getNews(int id) {
-        return RestClient.service().getNews(id)
+    public Single<News> getNews(int id) {
+        return RestClient.getService().getNews(id)
                 .timeout(Constants.CONN_TIMEOUT_SEC, TimeUnit.SECONDS);
     }
 
-    public Observable<List<Comment>> getComments(final News news) {
-        return Observable.from(news.getCommentIds())
-                .flatMap(new Func1<Integer, Observable<Comment>>() {
-                    @Override
-                    public Observable<Comment> call(Integer commentId) {
-                        return RestClient.service().getComment(commentId)
-                                .onErrorReturn(new Func1<Throwable, Comment>() {
-                                    @Override
-                                    public Comment call(Throwable throwable) {
-                                        return null;
-                                    }
-                                });
-                    }
-                })
-                .flatMap(new Func1<Comment, Observable<Comment>>() {
-                    @Override
-                    public Observable<Comment> call(Comment comment) {
-                        return getInnerComments(comment);
-                    }
-                })
+    public Single<List<Comment>> getComments(final News news) {
+        return Single.just(news.getCommentIds())
+                .toObservable()
+                .flatMap(Observable::fromIterable)
+                .flatMap(commentId -> RestClient.getService().getComment(commentId).toObservable().doOnError(error -> {}))
+                .flatMap(comments -> getInnerComments(comments).toObservable())
                 .timeout(Constants.CONN_TIMEOUT_SEC, TimeUnit.SECONDS)
-                .filter(new Func1<Comment, Boolean>() {
-                    @Override
-                    public Boolean call(Comment comment) {
-                        return (comment != null) && !comment.isDeleted() && !comment.isDead();
-                    }
-                })
+                .filter(comment -> (comment != null) && !comment.isDeleted() && !comment.isDead())
                 .toList()
-                .map(new Func1<List<Comment>, List<Comment>>() {
-                    @Override
-                    public List<Comment> call(List<Comment> comments) {
-                        Dictionary<Integer, Comment> commentDict = new Hashtable<>();
-                        List<Comment> retval = new ArrayList<>();
+                .map(comments -> {
+                    Dictionary<Integer, Comment> commentDict = new Hashtable<>();
+                    List<Comment> retval = new ArrayList<>();
 
-                        for (Comment comment : comments) {
-                            commentDict.put(comment.getId(), comment);
-                        }
-
-                        for (Integer commentId : news.getCommentIds()) {
-                            Comment comment = commentDict.get(commentId);
-                            if (comment != null) {
-                                retval.add(getCommentWithChild(0, comment, commentDict));
-                            }
-                        }
-
-                        return flattenComments(retval);
+                    for (Comment comment : comments) {
+                        commentDict.put(comment.getId(), comment);
                     }
+
+                    for (Integer commentId : news.getCommentIds()) {
+                        Comment comment = commentDict.get(commentId);
+                        if (comment != null) {
+                            retval.add(getCommentWithChild(0, comment, commentDict));
+                        }
+                    }
+
+                    return flattenComments(retval);
                 })
-                .map(new Func1<List<Comment>, List<Comment>>() {
-                    @Override
-                    public List<Comment> call(List<Comment> comments) {
-                        for (Comment comment : comments) {
-                            comment.setAllChildCount(getAllChildCount(comment));
-                        }
-
-                        return comments;
+                .map(comments -> {
+                    for (Comment comment : comments) {
+                        comment.setAllChildCount(getAllChildCount(comment));
                     }
+                    return comments;
                 });
     }
 
-    private Observable<List<Integer>> getHNSavedIds() {
+    private Single<List<Integer>> getHNSavedIds() {
         List<Integer> retval = getNewsIdsFromSp(Constants.SAVED_FILE_SP, Constants.SAVED_VAL_SP, ctx);
-        return Observable.just(retval);
+        return Single.just(retval);
     }
 
-    private Observable<List<Integer>> getHNNewIds(boolean isRefresh) {
+    private Single<List<Integer>> getHNNewIds(boolean isRefresh) {
         List<Integer> retval = getNewsIdsFromSp(Constants.NEW_FILE_SP, Constants.NEW_VAL_SP, ctx);
 
         if (retval.isEmpty() || isRefresh) {
-            return RestClient.service().getHNNewIds()
-                    .doOnNext(new putToSpAction(ctx, Constants.NEW_FILE_SP, Constants.NEW_VAL_SP));
+            return RestClient.getService().getHNNewIds()
+                    .doOnSuccess(new putToSpAction(ctx, Constants.NEW_FILE_SP, Constants.NEW_VAL_SP));
         } else {
-            return Observable.just(retval);
+            return Single.just(retval);
         }
     }
 
-    private Observable<List<Integer>> getHNTopIds(boolean isRefresh) {
+    private Single<List<Integer>> getHNTopIds(boolean isRefresh) {
         List<Integer> retval = getNewsIdsFromSp(Constants.TOP_FILE_SP, Constants.TOP_VAL_SP, ctx);
 
         if (retval.isEmpty() || isRefresh) {
-            return RestClient.service().getHNTopIds()
-                    .doOnNext(new putToSpAction(ctx, Constants.TOP_FILE_SP, Constants.TOP_VAL_SP));
+            return RestClient.getService().getHNTopIds()
+                    .doOnSuccess(new putToSpAction(ctx, Constants.TOP_FILE_SP, Constants.TOP_VAL_SP));
         } else {
-            return Observable.just(retval);
+            return Single.just(retval);
         }
     }
 
-    private Observable<List<Integer>> getHNAskIds(boolean isRefresh) {
+    private Single<List<Integer>> getHNAskIds(boolean isRefresh) {
         List<Integer> retval = getNewsIdsFromSp(Constants.ASK_FILE_SP, Constants.ASK_VAL_SP, ctx);
 
         if (retval.isEmpty() || isRefresh) {
-            return RestClient.service().getHNAskIds()
-                    .doOnNext(new putToSpAction(ctx, Constants.ASK_FILE_SP, Constants.ASK_VAL_SP));
+            return RestClient.getService().getHNAskIds()
+                    .doOnSuccess(new putToSpAction(ctx, Constants.ASK_FILE_SP, Constants.ASK_VAL_SP));
         } else {
-            return Observable.just(retval);
+            return Single.just(retval);
         }
     }
 
-    private Observable<List<Integer>> getHNShowIds(boolean isRefresh) {
+    private Single<List<Integer>> getHNShowIds(boolean isRefresh) {
         List<Integer> retval = getNewsIdsFromSp(Constants.SHOW_FILE_SP, Constants.SHOW_VAL_SP, ctx);
 
         if (retval.isEmpty() || isRefresh) {
-            return RestClient.service().getHNShowIds()
-                    .doOnNext(new putToSpAction(ctx, Constants.SHOW_FILE_SP, Constants.SHOW_VAL_SP));
+            return RestClient.getService().getHNShowIds()
+                    .doOnSuccess(new putToSpAction(ctx, Constants.SHOW_FILE_SP, Constants.SHOW_VAL_SP));
         } else {
-            return Observable.just(retval);
+            return Single.just(retval);
         }
     }
 
-    private Observable<List<Integer>> getHNJobIds(boolean isRefresh) {
+    private Single<List<Integer>> getHNJobIds(boolean isRefresh) {
         List<Integer> retval = getNewsIdsFromSp(Constants.JOB_FILE_SP, Constants.JOB_VAL_SP, ctx);
 
         if (retval.isEmpty() || isRefresh) {
-            return RestClient.service().getHNJobIds()
-                    .doOnNext(new putToSpAction(ctx, Constants.JOB_FILE_SP, Constants.JOB_VAL_SP));
+            return RestClient.getService().getHNJobIds()
+                    .doOnSuccess(new putToSpAction(ctx, Constants.JOB_FILE_SP, Constants.JOB_VAL_SP));
         } else {
-            return Observable.just(retval);
+            return Single.just(retval);
         }
     }
 
@@ -196,33 +173,19 @@ public class DataSource {
         return retval;
     }
 
-    private Observable<Comment> getInnerComments(Comment comment) {
+    private Flowable<Comment> getInnerComments(Comment comment) {
         if (comment != null && comment.getCommentIds().size() > 0) {
-            return Observable.merge(
-                    Observable.just(comment),
-                    Observable.from(comment.getCommentIds())
-                            .flatMap(new Func1<Integer, Observable<Comment>>() {
-                                @Override
-                                public Observable<Comment> call(Integer commentId) {
-                                    return RestClient.service().getComment(commentId)
-                                            .onErrorReturn(new Func1<Throwable, Comment>() {
-                                                @Override
-                                                public Comment call(Throwable throwable) {
-                                                    return null;
-                                                }
-                                            });
-                                }
-                            })
-                            .flatMap(new Func1<Comment, Observable<Comment>>() {
-                                @Override
-                                public Observable<Comment> call(Comment comment) {
-                                    return getInnerComments(comment);
-                                }
-                            })
+            return Single.merge(
+                    Single.just(comment),
+                    Single.fromObservable(Single.just(comment.getCommentIds())
+                            .toObservable()
+                            .flatMapIterable(list -> list)
+                            .flatMap(commentId -> RestClient.getService().getComment(commentId).toObservable().doOnError(error -> {}))
+                            .flatMap(updatedComment -> getInnerComments(updatedComment).toObservable()))
             );
         }
 
-        return Observable.just(comment);
+        return Flowable.empty();
     }
 
     private Comment getCommentWithChild(int level, Comment comment, Dictionary<Integer, Comment> commentDict) {
@@ -268,7 +231,7 @@ public class DataSource {
         return size;
     }
 
-    private class putToSpAction implements Action1<List<Integer>> {
+    private class putToSpAction implements Consumer<List<Integer>> {
         private Context context;
         private String SP_FILE_KEY;
         private String SP_VAL_KEY;
@@ -280,87 +243,63 @@ public class DataSource {
         }
 
         @Override
-        public void call(List<Integer> integers) {
+        public void accept(List<Integer> integers) {
             String input = Util.joinNews(integers);
             SharedPreferences topStoriesSp = context.getSharedPreferences(
                     SP_FILE_KEY, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = topStoriesSp.edit();
 
-            editor.putString(SP_VAL_KEY, input).commit();
+            editor.putString(SP_VAL_KEY, input).apply();
         }
     }
 
-    private class NewsTransformer implements Observable.Transformer<List<Integer>, List<News>> {
+    private class NewsTransformer implements SingleTransformer<List<Integer>, List<News>> {
 
         final List<Integer> subNewsIds = new ArrayList<>();
         private int from;
         private int to;
 
-        public NewsTransformer(int from, int count) {
+        NewsTransformer(int from, int count) {
             this.from = from;
             this.to = from + count;
         }
 
         @Override
-        public Observable<List<News>> call(Observable<List<Integer>> newsIds) {
+        public SingleSource<List<News>> apply(Single<List<Integer>> newsIds) {
             return newsIds
-                    .map(new Func1<List<Integer>, List<Integer>>() {
-                        @Override // Get a subset from Top News IDs and save it for later lookup
-                        public List<Integer> call(List<Integer> newsIds) {
-                            if (from >= newsIds.size()) {
-                                throw new EndOfListException();
-                            }
+                    .map(list -> {
+                        if (from >= list.size()) {
+                            throw new EndOfListException();
+                        }
 
-                            if (to > newsIds.size()) {
-                                to = newsIds.size();
-                            }
+                        if (to > list.size()) {
+                            to = list.size();
+                        }
 
-                            subNewsIds.addAll(newsIds.subList(from, to));
-                            return subNewsIds;
-                        }
+                        subNewsIds.addAll(list.subList(from, to));
+                        return subNewsIds;
                     })
-                    .flatMap(new Func1<List<Integer>, Observable<Integer>>() {
-                        @Override // Emit Top News IDs one at a time
-                        public Observable<Integer> call(List<Integer> integers) {
-                            return Observable.from(integers);
-                        }
-                    })
-                    .flatMap(new Func1<Integer, Observable<News>>() {
-                        @Override // Get News body
-                        public Observable<News> call(Integer integer) {
-                            return RestClient.service().getNews(integer)
-                                    .onErrorReturn(new Func1<Throwable, News>() {
-                                        @Override //If API returns error, return null News
-                                        public News call(Throwable throwable) {
-                                            return null;
-                                        }
-                                    });
-                        }
-                    })
+                    .flatMap(Single::just)
+                    .toObservable()
+                    .flatMapIterable(list -> list)
+                    .flatMap(newsId -> RestClient.getService().getNews(newsId).toObservable().doOnError(error -> {}))
+
                     .timeout(Constants.CONN_TIMEOUT_SEC, TimeUnit.SECONDS)
-                    .filter(new Func1<News, Boolean>() {
-                        @Override //Filter out the NULL News (from any parse error)
-                        public Boolean call(News news) {
-                            return (news != null) && !news.isDeleted() && !news.isDead();
-                        }
-                    })
+                    .filter(news -> (news != null) && !news.isDeleted() && !news.isDead())
                     .toList()
-                    .map(new Func1<List<News>, List<News>>() {
-                        @Override
-                        public List<News> call(List<News> newses) {
-                            List<News> retval = new ArrayList<>();
-                            Dictionary<Integer, News> dict = new Hashtable<>();
+                    .map(newses -> {
+                        List<News> retval = new ArrayList<>();
+                        Dictionary<Integer, News> dict = new Hashtable<>();
 
-                            for (News news : newses) {
-                                dict.put(news.getId(), news);
-                            }
-
-                            for (Integer topStory : subNewsIds) {
-                                retval.add(dict.get(topStory));
-                            }
-
-                            return retval;
+                        for (News news : newses) {
+                            dict.put(news.getId(), news);
                         }
+
+                        for (Integer topStory : subNewsIds) {
+                            retval.add(dict.get(topStory));
+                        }
+
+                        return retval;
                     });
         }
     }

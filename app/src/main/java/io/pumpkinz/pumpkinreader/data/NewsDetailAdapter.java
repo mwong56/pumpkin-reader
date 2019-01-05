@@ -3,16 +3,17 @@ package io.pumpkinz.pumpkinreader.data;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+
+import com.trello.rxlifecycle3.components.support.RxFragment;
 
 import net.koofr.android.timeago.TimeAgo;
 
@@ -36,7 +37,7 @@ public class NewsDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private TimeAgo dateFormatter;
     private OnClickListener onClickListener;
 
-    public NewsDetailAdapter(final Fragment fragment, final News news) {
+    public NewsDetailAdapter(final RxFragment fragment, final News news) {
         this.fragment = fragment;
         this.news = news;
         this.comments = new ArrayList<>();
