@@ -177,7 +177,7 @@ public class NewsDetailFragment extends Fragment {
             this.news = Parcels.unwrap(getActivity().getIntent().getParcelableExtra(Constants.NEWS));
 
             if (this.news != null) {
-                comments = AppObservable.bindFragment(this, hackerNewsRepository.getComments(this.news).cache());
+                comments = AppObservable.bindFragment(this, hackerNewsRepository.getAllComments(this.news).cache());
             }
         } else {
             //Use the new news, so replace the newsDetailAdapter
@@ -185,7 +185,7 @@ public class NewsDetailFragment extends Fragment {
             newsDetailAdapter = new NewsDetailAdapter(this, this.news);
             newsDetail.setAdapter(newsDetailAdapter);
 
-            comments = AppObservable.bindFragment(this, hackerNewsRepository.getComments(this.news).cache());
+            comments = AppObservable.bindFragment(this, hackerNewsRepository.getAllComments(this.news).cache());
         }
     }
 
@@ -202,7 +202,7 @@ public class NewsDetailFragment extends Fragment {
                             newsListener.onNewsLoaded(loadedNews);
                         }
 
-                        return hackerNewsRepository.getComments(loadedNews);
+                        return hackerNewsRepository.getAllComments(loadedNews);
                     }
                 });
 

@@ -8,6 +8,6 @@ import io.pumpkinz.pumpkinreader.service.database.entity.JsonNews;
 
 @Database(entities = { JsonComment.class, JsonNews.class }, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
-    abstract CommentsDao commentsDao();
-    abstract NewsDao newsDao();
+    public abstract CommentsDao commentsDao();
+    public abstract NewsDao newsDao();
 }

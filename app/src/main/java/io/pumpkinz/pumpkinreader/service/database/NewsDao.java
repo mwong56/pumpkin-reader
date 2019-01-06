@@ -6,13 +6,15 @@ import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 
 import io.pumpkinz.pumpkinreader.service.database.entity.JsonNews;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 @Dao
-interface NewsDao {
+public interface NewsDao {
 
     @Query("SELECT * from news where newsId = :newsId limit 1")
-    JsonNews loadNews(int newsId);
+    Single<JsonNews> loadNews(int newsId);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertNews(JsonNews news);
+    long insertNews(JsonNews news);
 }

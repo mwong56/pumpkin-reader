@@ -2,6 +2,7 @@ package io.pumpkinz.pumpkinreader.service;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Dictionary;
@@ -9,11 +10,14 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import hu.akarnokd.rxjava.interop.RxJavaInterop;
 import io.pumpkinz.pumpkinreader.etc.Constants;
 import io.pumpkinz.pumpkinreader.exception.EndOfListException;
 import io.pumpkinz.pumpkinreader.model.Comment;
 import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.service.database.AppDatabase;
+import io.pumpkinz.pumpkinreader.service.database.entity.JsonComment;
+import io.pumpkinz.pumpkinreader.service.database.entity.JsonNews;
 import io.pumpkinz.pumpkinreader.util.Util;
 import rx.Observable;
 import rx.functions.Action1;
@@ -21,6 +25,7 @@ import rx.functions.Func1;
 
 
 public class HackerNewsRepository {
+    private static final String TAG = "HackerNewsRepository";
 
     private Context ctx;
     private HackerNewsApi hackerNewsApi;
@@ -65,67 +70,67 @@ public class HackerNewsRepository {
     }
 
     public Observable<News> getNews(int id) {
-        return hackerNewsApi.getNews(id)
+        return Observable.concat(
+                RxJavaInterop.toV1Observable(appDatabase.newsDao().loadNews(id).toFlowable().map(jNews -> {
+                    Log.e(TAG, "Loaded news from db");
+                    return jNews.news;
+                })),
+                hackerNewsApi.getNews(id)
+                        .doOnNext(news -> {
+                            long result = appDatabase.newsDao().insertNews(new JsonNews(news.getId(), news));
+                            Log.e(TAG, String.format("Inserted %d row into db", result));
+                        })
+        )
+//                .debounce(Constants.DEBOUNCE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
                 .timeout(Constants.CONN_TIMEOUT_SEC, TimeUnit.SECONDS);
     }
 
-    public Observable<List<Comment>> getComments(final News news) {
+    public Observable<Comment> getComment(int id) {
+        return Observable.concat(
+                RxJavaInterop.toV1Observable(appDatabase.commentsDao().loadComment(id).toFlowable().map(jComments -> {
+                    Log.e(TAG, "Loaded comments from db");
+                    return jComments.comment;
+                })),
+                hackerNewsApi.getComment(id)
+                        .doOnNext(comment -> {
+                            long result = appDatabase.commentsDao().insertComment(new JsonComment(comment.getId(), comment));
+                            Log.e(TAG, String.format("Inserted %d row into db", result));
+                        })
+        )
+//                .debounce(Constants.DEBOUNCE_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                .timeout(Constants.CONN_TIMEOUT_SEC, TimeUnit.SECONDS);
+    }
+
+    public Observable<List<Comment>> getAllComments(final News news) {
         return Observable.from(news.getCommentIds())
-                .flatMap(new Func1<Integer, Observable<Comment>>() {
-                    @Override
-                    public Observable<Comment> call(Integer commentId) {
-                        return hackerNewsApi.getComment(commentId)
-                                .onErrorReturn(new Func1<Throwable, Comment>() {
-                                    @Override
-                                    public Comment call(Throwable throwable) {
-                                        return null;
-                                    }
-                                });
-                    }
-                })
-                .flatMap(new Func1<Comment, Observable<Comment>>() {
-                    @Override
-                    public Observable<Comment> call(Comment comment) {
-                        return getInnerComments(comment);
-                    }
-                })
+                .flatMap(commentId -> getComment(commentId).onErrorReturn(throwable -> null))
+                .flatMap(comment -> getInnerComments(comment))
                 .timeout(Constants.CONN_TIMEOUT_SEC, TimeUnit.SECONDS)
-                .filter(new Func1<Comment, Boolean>() {
-                    @Override
-                    public Boolean call(Comment comment) {
-                        return (comment != null) && !comment.isDeleted() && !comment.isDead();
-                    }
-                })
+                .filter(comment -> (comment != null) && !comment.isDeleted() && !comment.isDead())
                 .toList()
-                .map(new Func1<List<Comment>, List<Comment>>() {
-                    @Override
-                    public List<Comment> call(List<Comment> comments) {
-                        Dictionary<Integer, Comment> commentDict = new Hashtable<>();
-                        List<Comment> retval = new ArrayList<>();
+                .map(comments -> {
+                    Dictionary<Integer, Comment> commentDict = new Hashtable<>();
+                    List<Comment> retval = new ArrayList<>();
 
-                        for (Comment comment : comments) {
-                            commentDict.put(comment.getId(), comment);
-                        }
-
-                        for (Integer commentId : news.getCommentIds()) {
-                            Comment comment = commentDict.get(commentId);
-                            if (comment != null) {
-                                retval.add(getCommentWithChild(0, comment, commentDict));
-                            }
-                        }
-
-                        return flattenComments(retval);
+                    for (Comment comment : comments) {
+                        commentDict.put(comment.getId(), comment);
                     }
+
+                    for (Integer commentId : news.getCommentIds()) {
+                        Comment comment = commentDict.get(commentId);
+                        if (comment != null) {
+                            retval.add(getCommentWithChild(0, comment, commentDict));
+                        }
+                    }
+
+                    return flattenComments(retval);
                 })
-                .map(new Func1<List<Comment>, List<Comment>>() {
-                    @Override
-                    public List<Comment> call(List<Comment> comments) {
-                        for (Comment comment : comments) {
-                            comment.setAllChildCount(getAllChildCount(comment));
-                        }
-
-                        return comments;
+                .map(comments -> {
+                    for (Comment comment : comments) {
+                        comment.setAllChildCount(getAllChildCount(comment));
                     }
+
+                    return comments;
                 });
     }
 
@@ -194,24 +199,9 @@ public class HackerNewsRepository {
             return Observable.merge(
                     Observable.just(comment),
                     Observable.from(comment.getCommentIds())
-                            .flatMap(new Func1<Integer, Observable<Comment>>() {
-                                @Override
-                                public Observable<Comment> call(Integer commentId) {
-                                    return hackerNewsApi.getComment(commentId)
-                                            .onErrorReturn(new Func1<Throwable, Comment>() {
-                                                @Override
-                                                public Comment call(Throwable throwable) {
-                                                    return null;
-                                                }
-                                            });
-                                }
-                            })
-                            .flatMap(new Func1<Comment, Observable<Comment>>() {
-                                @Override
-                                public Observable<Comment> call(Comment comment) {
-                                    return getInnerComments(comment);
-                                }
-                            })
+                            .flatMap(commentId -> hackerNewsApi.getComment(commentId)
+                                    .onErrorReturn(throwable -> null))
+                            .flatMap(comment1 -> getInnerComments(comment1))
             );
         }
 
@@ -296,64 +286,43 @@ public class HackerNewsRepository {
 
         @Override
         public Observable<List<News>> call(Observable<List<Integer>> newsIds) {
+            // Get a subset from Top News IDs and save it for later lookup
+            // Emit Top News IDs one at a time
+            // Get News body
+            //If API returns error, return null News
+            //Filter out the NULL News (from any parse error)
             return newsIds
-                    .map(new Func1<List<Integer>, List<Integer>>() {
-                        @Override // Get a subset from Top News IDs and save it for later lookup
-                        public List<Integer> call(List<Integer> newsIds) {
-                            if (from >= newsIds.size()) {
-                                throw new EndOfListException();
-                            }
+                    .map(newsIds1 -> {
+                        if (from >= newsIds1.size()) {
+                            throw new EndOfListException();
+                        }
 
-                            if (to > newsIds.size()) {
-                                to = newsIds.size();
-                            }
+                        if (to > newsIds1.size()) {
+                            to = newsIds1.size();
+                        }
 
-                            subNewsIds.addAll(newsIds.subList(from, to));
-                            return subNewsIds;
-                        }
+                        subNewsIds.addAll(newsIds1.subList(from, to));
+                        return subNewsIds;
                     })
-                    .flatMap(new Func1<List<Integer>, Observable<Integer>>() {
-                        @Override // Emit Top News IDs one at a time
-                        public Observable<Integer> call(List<Integer> integers) {
-                            return Observable.from(integers);
-                        }
-                    })
-                    .flatMap(new Func1<Integer, Observable<News>>() {
-                        @Override // Get News body
-                        public Observable<News> call(Integer integer) {
-                            return hackerNewsApi.getNews(integer)
-                                    .onErrorReturn(new Func1<Throwable, News>() {
-                                        @Override //If API returns error, return null News
-                                        public News call(Throwable throwable) {
-                                            return null;
-                                        }
-                                    });
-                        }
-                    })
+                    .flatMap(Observable::from)
+                    .flatMap(integer -> getNews(integer)
+                            .onErrorReturn(throwable -> null))
                     .timeout(Constants.CONN_TIMEOUT_SEC, TimeUnit.SECONDS)
-                    .filter(new Func1<News, Boolean>() {
-                        @Override //Filter out the NULL News (from any parse error)
-                        public Boolean call(News news) {
-                            return (news != null) && !news.isDeleted() && !news.isDead();
-                        }
-                    })
+                    .filter(news -> (news != null) && !news.isDeleted() && !news.isDead())
                     .toList()
-                    .map(new Func1<List<News>, List<News>>() {
-                        @Override
-                        public List<News> call(List<News> newses) {
-                            List<News> retval = new ArrayList<>();
-                            Dictionary<Integer, News> dict = new Hashtable<>();
+                    .map(newses -> {
+                        List<News> retval = new ArrayList<>();
+                        Dictionary<Integer, News> dict = new Hashtable<>();
 
-                            for (News news : newses) {
-                                dict.put(news.getId(), news);
-                            }
-
-                            for (Integer topStory : subNewsIds) {
-                                retval.add(dict.get(topStory));
-                            }
-
-                            return retval;
+                        for (News news : newses) {
+                            dict.put(news.getId(), news);
                         }
+
+                        for (Integer topStory : subNewsIds) {
+                            retval.add(dict.get(topStory));
+                        }
+
+                        return retval;
                     });
         }
     }

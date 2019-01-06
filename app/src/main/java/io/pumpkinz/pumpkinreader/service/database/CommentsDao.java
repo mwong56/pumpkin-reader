@@ -6,13 +6,14 @@ import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 
 import io.pumpkinz.pumpkinreader.service.database.entity.JsonComment;
+import io.reactivex.Single;
 
 
 @Dao
-interface CommentsDao {
+public interface CommentsDao {
     @Query("SELECT * from comments where commentId = :commentId limit 1")
-    JsonComment loadComment(int commentId);
+    Single<JsonComment> loadComment(int commentId);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertComment(JsonComment comment);
+    long insertComment(JsonComment comment);
 }
