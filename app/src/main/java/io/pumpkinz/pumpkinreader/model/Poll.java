@@ -3,7 +3,6 @@ package io.pumpkinz.pumpkinreader.model;
 import org.parceler.Parcel;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 

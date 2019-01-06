@@ -29,7 +29,7 @@ import io.pumpkinz.pumpkinreader.etc.Constants;
 import io.pumpkinz.pumpkinreader.etc.DividerItemDecoration;
 import io.pumpkinz.pumpkinreader.model.Comment;
 import io.pumpkinz.pumpkinreader.model.News;
-import io.pumpkinz.pumpkinreader.service.DataSource;
+import io.pumpkinz.pumpkinreader.service.HackerNewsRepository;
 import io.pumpkinz.pumpkinreader.util.CommentParcel;
 import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 import rx.Observable;
@@ -48,7 +48,7 @@ public class NewsDetailFragment extends Fragment {
     private News news;
     private Observable<List<Comment>> comments;
     private Subscription subscription = Subscriptions.empty();
-    private DataSource dataSource;
+    private HackerNewsRepository hackerNewsRepository;
     private NewsListener newsListener;
     private NewsDetailAdapter newsDetailAdapter;
     private RecyclerView newsDetail;
@@ -58,7 +58,7 @@ public class NewsDetailFragment extends Fragment {
     @Override
     public void onAttach(Context ctx) {
         super.onAttach(ctx);
-        dataSource = new DataSource(getActivity());
+        hackerNewsRepository = PumpkinApplication.instance.hackerNewsRepository;
 
         if (ctx instanceof NewsListener) {
             newsListener = (NewsListener) ctx;
@@ -177,7 +177,7 @@ public class NewsDetailFragment extends Fragment {
             this.news = Parcels.unwrap(getActivity().getIntent().getParcelableExtra(Constants.NEWS));
 
             if (this.news != null) {
-                comments = AppObservable.bindFragment(this, dataSource.getComments(this.news).cache());
+                comments = AppObservable.bindFragment(this, hackerNewsRepository.getComments(this.news).cache());
             }
         } else {
             //Use the new news, so replace the newsDetailAdapter
@@ -185,13 +185,13 @@ public class NewsDetailFragment extends Fragment {
             newsDetailAdapter = new NewsDetailAdapter(this, this.news);
             newsDetail.setAdapter(newsDetailAdapter);
 
-            comments = AppObservable.bindFragment(this, dataSource.getComments(this.news).cache());
+            comments = AppObservable.bindFragment(this, hackerNewsRepository.getComments(this.news).cache());
         }
     }
 
     private void loadNews(int id) {
         news = new News(id);
-        Observable<List<Comment>> commentsObservable = dataSource.getNews(id)
+        Observable<List<Comment>> commentsObservable = hackerNewsRepository.getNews(id)
                 .flatMap(new Func1<News, Observable<List<Comment>>>() {
                     @Override
                     public Observable<List<Comment>> call(News loadedNews) {
@@ -202,7 +202,7 @@ public class NewsDetailFragment extends Fragment {
                             newsListener.onNewsLoaded(loadedNews);
                         }
 
-                        return dataSource.getComments(loadedNews);
+                        return hackerNewsRepository.getComments(loadedNews);
                     }
                 });
 

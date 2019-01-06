@@ -13,18 +13,25 @@ import io.pumpkinz.pumpkinreader.etc.Constants;
 import io.pumpkinz.pumpkinreader.exception.EndOfListException;
 import io.pumpkinz.pumpkinreader.model.Comment;
 import io.pumpkinz.pumpkinreader.model.News;
+import io.pumpkinz.pumpkinreader.service.database.AppDatabase;
 import io.pumpkinz.pumpkinreader.util.Util;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
 
-public class DataSource {
+public class HackerNewsRepository {
 
     private Context ctx;
+    private HackerNewsApi hackerNewsApi;
+    private AppDatabase appDatabase;
+    private AppSharedPreferences appSharedPreferences;
 
-    public DataSource(Context ctx) {
+    public HackerNewsRepository(Context ctx, HackerNewsApi api, AppDatabase appDatabase, AppSharedPreferences appSharedPreferences) {
         this.ctx = ctx;
+        this.hackerNewsApi = api;
+        this.appDatabase = appDatabase;
+        this.appSharedPreferences = appSharedPreferences;
     }
 
     public Observable<List<News>> getHNSaved(final int from, final int count) {
@@ -58,7 +65,7 @@ public class DataSource {
     }
 
     public Observable<News> getNews(int id) {
-        return RestClient.service().getNews(id)
+        return hackerNewsApi.getNews(id)
                 .timeout(Constants.CONN_TIMEOUT_SEC, TimeUnit.SECONDS);
     }
 
@@ -67,7 +74,7 @@ public class DataSource {
                 .flatMap(new Func1<Integer, Observable<Comment>>() {
                     @Override
                     public Observable<Comment> call(Integer commentId) {
-                        return RestClient.service().getComment(commentId)
+                        return hackerNewsApi.getComment(commentId)
                                 .onErrorReturn(new Func1<Throwable, Comment>() {
                                     @Override
                                     public Comment call(Throwable throwable) {
@@ -123,15 +130,15 @@ public class DataSource {
     }
 
     private Observable<List<Integer>> getHNSavedIds() {
-        List<Integer> retval = getNewsIdsFromSp(Constants.SAVED_FILE_SP, Constants.SAVED_VAL_SP, ctx);
+        List<Integer> retval = appSharedPreferences.getNewsIds(Constants.SAVED_FILE_SP, Constants.SAVED_VAL_SP);
         return Observable.just(retval);
     }
 
     private Observable<List<Integer>> getHNNewIds(boolean isRefresh) {
-        List<Integer> retval = getNewsIdsFromSp(Constants.NEW_FILE_SP, Constants.NEW_VAL_SP, ctx);
+        List<Integer> retval = appSharedPreferences.getNewsIds(Constants.NEW_FILE_SP, Constants.NEW_VAL_SP);
 
         if (retval.isEmpty() || isRefresh) {
-            return RestClient.service().getHNNewIds()
+            return hackerNewsApi.getHNNewIds()
                     .doOnNext(new putToSpAction(ctx, Constants.NEW_FILE_SP, Constants.NEW_VAL_SP));
         } else {
             return Observable.just(retval);
@@ -139,10 +146,10 @@ public class DataSource {
     }
 
     private Observable<List<Integer>> getHNTopIds(boolean isRefresh) {
-        List<Integer> retval = getNewsIdsFromSp(Constants.TOP_FILE_SP, Constants.TOP_VAL_SP, ctx);
+        List<Integer> retval = appSharedPreferences.getNewsIds(Constants.TOP_FILE_SP, Constants.TOP_VAL_SP);
 
         if (retval.isEmpty() || isRefresh) {
-            return RestClient.service().getHNTopIds()
+            return hackerNewsApi.getHNTopIds()
                     .doOnNext(new putToSpAction(ctx, Constants.TOP_FILE_SP, Constants.TOP_VAL_SP));
         } else {
             return Observable.just(retval);
@@ -150,10 +157,10 @@ public class DataSource {
     }
 
     private Observable<List<Integer>> getHNAskIds(boolean isRefresh) {
-        List<Integer> retval = getNewsIdsFromSp(Constants.ASK_FILE_SP, Constants.ASK_VAL_SP, ctx);
+        List<Integer> retval = appSharedPreferences.getNewsIds(Constants.ASK_FILE_SP, Constants.ASK_VAL_SP);
 
         if (retval.isEmpty() || isRefresh) {
-            return RestClient.service().getHNAskIds()
+            return hackerNewsApi.getHNAskIds()
                     .doOnNext(new putToSpAction(ctx, Constants.ASK_FILE_SP, Constants.ASK_VAL_SP));
         } else {
             return Observable.just(retval);
@@ -161,10 +168,10 @@ public class DataSource {
     }
 
     private Observable<List<Integer>> getHNShowIds(boolean isRefresh) {
-        List<Integer> retval = getNewsIdsFromSp(Constants.SHOW_FILE_SP, Constants.SHOW_VAL_SP, ctx);
+        List<Integer> retval = appSharedPreferences.getNewsIds(Constants.SHOW_FILE_SP, Constants.SHOW_VAL_SP);
 
         if (retval.isEmpty() || isRefresh) {
-            return RestClient.service().getHNShowIds()
+            return hackerNewsApi.getHNShowIds()
                     .doOnNext(new putToSpAction(ctx, Constants.SHOW_FILE_SP, Constants.SHOW_VAL_SP));
         } else {
             return Observable.just(retval);
@@ -172,28 +179,14 @@ public class DataSource {
     }
 
     private Observable<List<Integer>> getHNJobIds(boolean isRefresh) {
-        List<Integer> retval = getNewsIdsFromSp(Constants.JOB_FILE_SP, Constants.JOB_VAL_SP, ctx);
+        List<Integer> retval = appSharedPreferences.getNewsIds(Constants.JOB_FILE_SP, Constants.JOB_VAL_SP);
 
         if (retval.isEmpty() || isRefresh) {
-            return RestClient.service().getHNJobIds()
+            return hackerNewsApi.getHNJobIds()
                     .doOnNext(new putToSpAction(ctx, Constants.JOB_FILE_SP, Constants.JOB_VAL_SP));
         } else {
             return Observable.just(retval);
         }
-    }
-
-    private List<Integer> getNewsIdsFromSp(String newsFileKey, String newsValKey, Context context) {
-        List<Integer> retval = new ArrayList<>();
-
-        SharedPreferences topStoriesSp = context.getSharedPreferences(
-                newsFileKey, Context.MODE_PRIVATE);
-        String topStories = topStoriesSp.getString(newsValKey, "");
-
-        if (!topStories.isEmpty()) {
-            retval = Util.splitNews(topStories);
-        }
-
-        return retval;
     }
 
     private Observable<Comment> getInnerComments(Comment comment) {
@@ -204,7 +197,7 @@ public class DataSource {
                             .flatMap(new Func1<Integer, Observable<Comment>>() {
                                 @Override
                                 public Observable<Comment> call(Integer commentId) {
-                                    return RestClient.service().getComment(commentId)
+                                    return hackerNewsApi.getComment(commentId)
                                             .onErrorReturn(new Func1<Throwable, Comment>() {
                                                 @Override
                                                 public Comment call(Throwable throwable) {
@@ -273,7 +266,7 @@ public class DataSource {
         private String SP_FILE_KEY;
         private String SP_VAL_KEY;
 
-        public putToSpAction(Context context, String SP_FILE_KEY, String SP_VAL_KEY) {
+        putToSpAction(Context context, String SP_FILE_KEY, String SP_VAL_KEY) {
             this.context = context;
             this.SP_FILE_KEY = SP_FILE_KEY;
             this.SP_VAL_KEY = SP_VAL_KEY;
@@ -286,7 +279,7 @@ public class DataSource {
                     SP_FILE_KEY, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = topStoriesSp.edit();
 
-            editor.putString(SP_VAL_KEY, input).commit();
+            editor.putString(SP_VAL_KEY, input).apply();
         }
     }
 
@@ -328,7 +321,7 @@ public class DataSource {
                     .flatMap(new Func1<Integer, Observable<News>>() {
                         @Override // Get News body
                         public Observable<News> call(Integer integer) {
-                            return RestClient.service().getNews(integer)
+                            return hackerNewsApi.getNews(integer)
                                     .onErrorReturn(new Func1<Throwable, News>() {
                                         @Override //If API returns error, return null News
                                         public News call(Throwable throwable) {
