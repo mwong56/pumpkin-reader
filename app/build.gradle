@@ -53,7 +53,7 @@ dependencies {
     annotationProcessor 'org.parceler:parceler:1.1.12'
 
     implementation 'me.saket:better-link-movement-method:2.2.0'
-    implementation 'com.google.android.gms:play-services-oss-licenses:16.0.1'
+    implementation 'com.google.android.gms:play-services-oss-licenses:16.0.2'
     implementation 'pub.devrel:easypermissions:2.0.0'
 
 

@@ -27,6 +27,7 @@ import io.pumpkinz.pumpkinreader.model.News;
 
 public class ActionUtil {
     static String OUTLINE_URL = "https://outline.com/";
+    static boolean ENABLE_CHROME_CUSTOM_TABS = false; // todo: move to settings
 
     public static void open(Context ctx, News news, boolean useOutline) {
         if (news.getUrl() != null && !news.getUrl().isEmpty()) {
@@ -38,7 +39,7 @@ public class ActionUtil {
 
             List<String> pkgs = getChromePackages(ctx);
 
-            if (!pkgs.isEmpty()) {
+            if (!pkgs.isEmpty() && ENABLE_CHROME_CUSTOM_TABS) {
                 PumpkinCustomTab customTab = new PumpkinCustomTab((Activity) ctx, news);
                 customTab.openPage(uri);
             } else {
