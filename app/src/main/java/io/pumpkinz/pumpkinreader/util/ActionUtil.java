@@ -137,7 +137,7 @@ public class ActionUtil {
             }
         };
 
-        String[] packages = {"com.android.chrome", "com.chrome.beta", "com.chrome.dev"};
+        String[] packages = {"com.android.chrome", "com.chrome.beta", "com.chrome.dev", "org.mozilla.fenix.nightly", "org.mozilla.fenix"};
         List<String> availablePkgs = new ArrayList<>();
 
         for (String pkg : packages) {
