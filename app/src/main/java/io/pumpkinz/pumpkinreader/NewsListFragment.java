@@ -27,7 +27,7 @@ import io.pumpkinz.pumpkinreader.etc.Constants;
 import io.pumpkinz.pumpkinreader.etc.DividerItemDecoration;
 import io.pumpkinz.pumpkinreader.exception.EndOfListException;
 import io.pumpkinz.pumpkinreader.model.News;
-import io.pumpkinz.pumpkinreader.service.DataSource;
+import io.pumpkinz.pumpkinreader.service.HackerNewsRepository;
 import io.pumpkinz.pumpkinreader.util.ActionUtil;
 import io.pumpkinz.pumpkinreader.util.PreferencesUtil;
 import me.saket.bettermovementmethod.BetterLinkMovementMethod;
@@ -46,7 +46,7 @@ public class NewsListFragment extends Fragment {
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private NewsAdapter newsAdapter;
-    private DataSource dataSource;
+    private HackerNewsRepository hackerNewsRepository;
     private Observable<List<News>> stories;
     private Subscription subscription = Subscriptions.empty();
     private boolean isLoading = false;
@@ -61,7 +61,7 @@ public class NewsListFragment extends Fragment {
     @Override
     public void onAttach(Context ctx) {
         super.onAttach(ctx);
-        dataSource = new DataSource(ctx);
+        hackerNewsRepository = PumpkinApplication.instance.hackerNewsRepository;
     }
 
     @Override
@@ -175,25 +175,25 @@ public class NewsListFragment extends Fragment {
 
         switch (this.newsType) {
             case R.string.saved:
-                ret = dataSource.getHNSaved(from, count);
+                ret = hackerNewsRepository.getHNSaved(from, count);
                 break;
             case R.string.top:
-                ret = dataSource.getHNTop(from, count, refresh);
+                ret = hackerNewsRepository.getHNTop(from, count, refresh);
                 break;
             case R.string.recent:
-                ret = dataSource.getHNNew(from, count, refresh);
+                ret = hackerNewsRepository.getHNNew(from, count, refresh);
                 break;
             case R.string.ask_hn:
-                ret = dataSource.getHNAsk(from, count, refresh);
+                ret = hackerNewsRepository.getHNAsk(from, count, refresh);
                 break;
             case R.string.show_hn:
-                ret = dataSource.getHNShow(from, count, refresh);
+                ret = hackerNewsRepository.getHNShow(from, count, refresh);
                 break;
             case R.string.job:
-                ret = dataSource.getHNJob(from, count, refresh);
+                ret = hackerNewsRepository.getHNJob(from, count, refresh);
                 break;
             default:
-                ret = dataSource.getHNTop(from, count, refresh);
+                ret = hackerNewsRepository.getHNTop(from, count, refresh);
         }
 
         return ret.cache();

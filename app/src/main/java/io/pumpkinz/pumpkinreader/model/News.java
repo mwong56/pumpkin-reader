@@ -1,17 +1,36 @@
 package io.pumpkinz.pumpkinreader.model;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.util.Log;
+
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
 import org.parceler.Parcel;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.pumpkinz.pumpkinreader.etc.Constants;
+
+@Entity(tableName = "news")
 @Parcel
 public class News extends Item {
 
+    @ColumnInfo(name="kids")
     List<Integer> kids;
+    @ColumnInfo(name="url")
     String url;
+    @ColumnInfo(name="score")
     int score;
+    @ColumnInfo(name="title")
     String title;
+    @ColumnInfo(name="descendants")
     int descendants;
 
     public News() {
@@ -94,4 +113,29 @@ public class News extends Item {
         return result;
     }
 
+    public static class NewsDeserializer implements JsonDeserializer<News> {
+
+        @Override
+        public News deserialize(JsonElement json, java.lang.reflect.Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            JsonObject jo = json.getAsJsonObject();
+            try {
+                Item.Type type = Item.Type.fromString(jo.get("type").getAsString());
+
+                switch (type) {
+                    case Story:
+                        return context.deserialize(json, Story.class);
+                    case Job:
+                        return context.deserialize(json, Job.class);
+                    case Poll:
+                        return context.deserialize(json, Poll.class);
+                    default:
+                        throw new AssertionError("Unknown News type: " + type);
+                }
+            } catch (AssertionError | JsonParseException ex) {
+                Log.d(Constants.APP, ex.getMessage());
+            }
+
+            return null;
+        }
+    }
 }

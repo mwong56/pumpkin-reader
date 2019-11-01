@@ -43,6 +43,7 @@ public class Constants {
     public static final String MIME_TEXT_PLAIN = "text/plain";
 
     public static final int CONN_TIMEOUT_SEC = 5;
+    public static final int DEBOUNCE_TIMEOUT_MILLIS = 400;
 
     public static final int TAB_WEBVIEW = 0;
     public static final int TAB_COMMENTVIEW = 1;
