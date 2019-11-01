@@ -14,6 +14,7 @@ import org.parceler.Parcels;
 import io.pumpkinz.pumpkinreader.etc.Constants;
 import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.util.ActionUtil;
+import io.pumpkinz.pumpkinreader.util.LinkUtil;
 import io.pumpkinz.pumpkinreader.util.PreferencesUtil;
 import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 
@@ -40,7 +41,7 @@ public class NewsCommentsActivity extends PumpkinReaderActivity
             news = Parcels.unwrap(getIntent().getParcelableExtra(Constants.NEWS));
         }
 
-        BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, this);
+        LinkUtil.linkify(this);
     }
 
     @Override
@@ -61,7 +62,7 @@ public class NewsCommentsActivity extends PumpkinReaderActivity
                 this.finish();
                 return true;
             case R.id.action_open:
-                ActionUtil.open(this, news, false);
+                ActionUtil.open(this, news.getUrl());
                 return true;
             case R.id.action_save:
                 ActionUtil.save(this, menu, news);
@@ -70,7 +71,7 @@ public class NewsCommentsActivity extends PumpkinReaderActivity
                 ActionUtil.share(this, news, true);
                 return true;
             case R.id.action_outline:
-                ActionUtil.open(this, news, true);
+                ActionUtil.open_in_outline(this, news.getUrl());
                 return true;
         }
 

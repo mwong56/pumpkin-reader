@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.customtabs.CustomTabsClient;
 import android.support.customtabs.CustomTabsServiceConnection;
 import android.support.design.widget.CoordinatorLayout;
@@ -27,24 +29,30 @@ import io.pumpkinz.pumpkinreader.model.News;
 
 public class ActionUtil {
     static String OUTLINE_URL = "https://outline.com/";
-    static boolean ENABLE_CHROME_CUSTOM_TABS = false; // todo: move to settings
 
-    public static void open(Context ctx, News news, boolean useOutline) {
-        if (news.getUrl() != null && !news.getUrl().isEmpty()) {
-            Uri uri = Uri.parse(news.getUrl());
+    public static void open_in_outline(Context ctx, String url) {
+        if (url != null) {
+            Uri uri = Uri.parse(url);
+            open_uri(ctx, Uri.parse(String.format("%s%s%s", OUTLINE_URL, uri.getHost(), uri.getPath())));
+        }
+    }
 
-            if (useOutline) {
-                uri = Uri.parse(String.format("%s%s%s", OUTLINE_URL, uri.getHost(), uri.getPath()));
-            }
+    public static void open(Context ctx, String url) {
+        if (url != null) {
+            open_uri(ctx, Uri.parse(url));
+        }
+    }
 
-            List<String> pkgs = getChromePackages(ctx);
+    private static void open_uri(Context ctx, Uri uri) {
+        if (uri != null) {
+            final SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ctx);
+            boolean useChromeCustomTabs = pref.getBoolean(Constants.CONFIG_CUSTOM_TABS, true);
 
-            if (!pkgs.isEmpty() && ENABLE_CHROME_CUSTOM_TABS) {
-                PumpkinCustomTab customTab = new PumpkinCustomTab((Activity) ctx, news);
+            if (useChromeCustomTabs && !getChromePackages(ctx).isEmpty()) {
+                PumpkinCustomTab customTab = new PumpkinCustomTab((Activity) ctx);
                 customTab.openPage(uri);
             } else {
                 Intent intent = new Intent(ctx, WebViewActivity.class);
-                intent.putExtra(Constants.NEWS, Parcels.wrap(news));
                 ctx.startActivity(intent);
             }
         }

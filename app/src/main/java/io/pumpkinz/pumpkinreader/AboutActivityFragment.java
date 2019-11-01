@@ -16,6 +16,7 @@ import android.widget.Button;
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
 
 import io.pumpkinz.pumpkinreader.etc.Constants;
+import io.pumpkinz.pumpkinreader.util.LinkUtil;
 import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 
 
@@ -28,7 +29,7 @@ public class AboutActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View view =  inflater.inflate(R.layout.fragment_about, container, false);
-        BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, (ViewGroup) view);
+        LinkUtil.linkify((ViewGroup) view);
         return view;
     }
 

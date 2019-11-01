@@ -29,6 +29,7 @@ import io.pumpkinz.pumpkinreader.exception.EndOfListException;
 import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.service.DataSource;
 import io.pumpkinz.pumpkinreader.util.ActionUtil;
+import io.pumpkinz.pumpkinreader.util.LinkUtil;
 import io.pumpkinz.pumpkinreader.util.PreferencesUtil;
 import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 import rx.Observable;
@@ -100,7 +101,7 @@ public class NewsListFragment extends Fragment {
             }
         });
 
-        BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, ((ViewGroup) view));
+        LinkUtil.linkify((ViewGroup) view);
         return view;
     }
 
@@ -153,7 +154,7 @@ public class NewsListFragment extends Fragment {
         boolean isURLValid = news.getUrl() != null && !news.getUrl().isEmpty();
 
         if (shouldOpenLink && isURLValid) {
-            ActionUtil.open(getActivity(), news, false);
+            ActionUtil.open(getActivity(), news.getUrl());
         }
     }
 

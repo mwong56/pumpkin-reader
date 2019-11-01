@@ -31,6 +31,7 @@ import io.pumpkinz.pumpkinreader.model.Comment;
 import io.pumpkinz.pumpkinreader.model.News;
 import io.pumpkinz.pumpkinreader.service.DataSource;
 import io.pumpkinz.pumpkinreader.util.CommentParcel;
+import io.pumpkinz.pumpkinreader.util.LinkUtil;
 import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 import rx.Observable;
 import rx.Subscriber;
@@ -90,7 +91,7 @@ public class NewsDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_news_detail, container, false);
-        BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, ((ViewGroup) view));
+        LinkUtil.linkify((ViewGroup) view);
         return view;
     }
 
