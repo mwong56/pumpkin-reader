@@ -27,7 +27,7 @@
         android:id="@+id/action_outline"
         android:orderInCategory="400"
         android:title="@string/open_outline"
-        android:icon="@drawable/ic_chrome_reader_mode"
+        android:icon="@drawable/ic_reader_mode_white_24dp"
         app:showAsAction="ifRoom" />
 
 </menu>

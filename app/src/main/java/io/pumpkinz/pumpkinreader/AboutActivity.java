@@ -3,11 +3,9 @@ package io.pumpkinz.pumpkinreader;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
-import android.text.util.Linkify;
 import android.view.MenuItem;
 
-import me.saket.bettermovementmethod.BetterLinkMovementMethod;
-
+import io.pumpkinz.pumpkinreader.util.LinkUtil;
 
 public class AboutActivity extends PumpkinReaderActivity {
 
@@ -16,7 +14,7 @@ public class AboutActivity extends PumpkinReaderActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
         setUpToolbar();
-        BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, this);
+        LinkUtil.linkify(this);
     }
 
     @Override

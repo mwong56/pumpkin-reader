@@ -21,12 +21,10 @@ import io.pumpkinz.pumpkinreader.model.News;
 public class PumpkinCustomTab {
 
     private Activity activity;
-    private News news;
     private CustomTabsIntent customTabsIntent;
 
-    public PumpkinCustomTab(Activity activity, News news) {
+    public PumpkinCustomTab(Activity activity) {
         this.activity = activity;
-        this.news = news;
         this.customTabsIntent = buildCustomTabsIntent();
         this.customTabsIntent.intent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
     }

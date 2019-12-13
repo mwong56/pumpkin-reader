@@ -23,6 +23,7 @@ import java.util.ListIterator;
 import io.pumpkinz.pumpkinreader.R;
 import io.pumpkinz.pumpkinreader.model.Comment;
 import io.pumpkinz.pumpkinreader.model.News;
+import io.pumpkinz.pumpkinreader.util.LinkUtil;
 import io.pumpkinz.pumpkinreader.util.Util;
 import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 
@@ -93,11 +94,11 @@ public class NewsDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         switch (viewType) {
             case 0:
                 v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.news_detail, viewGroup, false);
-                BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, ((ViewGroup) v));
+                LinkUtil.linkify((ViewGroup) v);
                 return new NewsViewHolder(v);
             case 1:
                 v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.comment_item, viewGroup, false);
-                BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, ((ViewGroup) v));
+                LinkUtil.linkify((ViewGroup) v);
                 return new CommentViewHolder(v);
             case 2:
                 v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.loading_item, viewGroup, false);
