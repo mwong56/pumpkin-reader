@@ -57,6 +57,10 @@ public abstract class Item {
         return text;
     }
 
+    public String getFormattedText() {
+        return text.replace("\n", "<br />").replaceAll(" (?= )|(?<= ) ", "&nbsp;");
+    }
+
     public boolean isDead() {
         return dead;
     }

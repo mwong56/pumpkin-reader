@@ -131,7 +131,7 @@ public class NewsDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                     newsViewHolder.getCommentCount().setText(commentCountFormat);
 
                     if (news.getText() != null && !news.getText().isEmpty()) {
-                        newsViewHolder.getBody().setText(Util.trim(Html.fromHtml(news.getText())));
+                        newsViewHolder.getBody().setText(Util.trim(Html.fromHtml(news.getFormattedText())));
                     } else {
                         newsViewHolder.getBody().setVisibility(View.GONE);
                     }
@@ -149,7 +149,7 @@ public class NewsDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 commentViewHolder.getContainer().setLayoutParams(params);
                 commentViewHolder.getSubmitter().setText(comment.getBy());
                 commentViewHolder.getDate().setText(this.dateFormatter.timeAgo(comment.getTime()));
-                commentViewHolder.getBody().setText(Util.trim(Html.fromHtml(comment.getText())));
+                commentViewHolder.getBody().setText(Util.trim(Html.fromHtml(comment.getFormattedText())));
 
                 if (comment.getCommentIds().size() > 0 && !comment.isExpanded()) {
                     commentViewHolder.getChildCount().setText("+" + comment.getAllChildCount() + " comments");
